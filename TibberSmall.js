@@ -29,6 +29,8 @@ const TEXT_COLOR_HIGH = "#de4035";
 // When the price this hour is lower than the average price today, this text color is used (green)
 const TEXT_COLOR_LOW = "#35de3b";
 
+const MONEY_SIGN = "kr"; // Change to "€" or "$" if you don't use Norwegian kroner
+const CENT_SIGN = "øre"; // Change to "cents" or "pennies" if you don't use Norwegian kroner
 
 
 
@@ -140,7 +142,7 @@ async function createWidget() {
   if (priceOre > avgPrice)
     price.textColor = new Color(TEXT_COLOR_HIGH)
 
-  const priceTxt = stackV.addText("øre/kWh");
+  const priceTxt = stackV.addText(CENT_SIGN + "/kWh");
   priceTxt.centerAlignText();
   priceTxt.font = Font.lightSystemFont(10);
   priceTxt.textColor = new Color(TEXT_COLOR);
@@ -159,7 +161,7 @@ async function createWidget() {
   stackH.layoutVertically()
 
   // Add usage so far today in right column
-  let usage = stackH.addText(totCost + " kr");
+  let usage = stackH.addText(totCost + " " + MONEY_SIGN);
   usage.rightAlignText();
   usage.font = Font.lightSystemFont(16);
   usage.textColor = new Color(TEXT_COLOR);

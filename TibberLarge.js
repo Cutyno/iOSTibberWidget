@@ -27,6 +27,9 @@ if (args.widgetParameter) {
 	HOME_NUMBER = 0; // Default - brukes om ikke man har lagt til paramter for widgeten og/eller når man ser på widgeten direkte i appen.
 }
 
+const MONEY_SIGN = "kr"; // Change to "€" or "$" if you don't use Norwegian kroner
+const CENT_SIGN = "øre"; // Change to "cents" or "pennies" if you don't use Norwegian kroner
+
 const HOME_NR = HOME_NUMBER;
 
 // HTML code for background color (#000000 is black)
@@ -192,7 +195,7 @@ url += encodeURI("{ \
       ], \
       datasets:[ \
          { \
-            label:'Øre pr kWh', \
+            label:" + CENT_SIGN + " per kWh', \
             steppedLine:true, \
             data:[ \
                " + prices + " \
@@ -208,7 +211,7 @@ url += encodeURI("{ \
             ] \
          }, \
          { \
-            label:'Average (\" + avgPrice + \" øre)', \
+            label:'Average (" + avgPrice + " " + CENT_SIGN + ")', \
             data:[ \
                " + avgPrices + " \
             ], \
@@ -330,7 +333,7 @@ async function createWidget() {
   else if (priceOre > avgPrice)
     price.textColor = new Color(TEXT_COLOR_HIGH)
 
-  const priceTxt = stackV.addText("øre/kWh");
+  const priceTxt = stackV.addText(CENT_SIGN + "/kWh");
   priceTxt.centerAlignText();
   priceTxt.font = Font.lightSystemFont(10);
   priceTxt.textColor = new Color(TEXT_COLOR);
@@ -349,7 +352,7 @@ async function createWidget() {
   stackM.layoutVertically()
 
   // Add usage so far today in middle column
-  let consumption = stackM.addText(totCostD + " kr");
+  let consumption = stackM.addText(totCostD + " " + MONEY_SIGN);
   consumption.rightAlignText();
   consumption.font = Font.lightSystemFont(16);
   consumption.textColor = new Color(TEXT_COLOR);
@@ -372,7 +375,7 @@ async function createWidget() {
   stackH.layoutVertically()
 
   // Add usage so far this month in right column
-  consumption = stackH.addText(totCostM + " kr");
+  consumption = stackH.addText(totCostM + " " + MONEY_SIGN);
   consumption.rightAlignText();
   consumption.font = Font.lightSystemFont(16);
   consumption.textColor = new Color(TEXT_COLOR);
