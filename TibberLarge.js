@@ -195,7 +195,7 @@ url += encodeURI("{ \
       ], \
       datasets:[ \
          { \
-            label:" + CENT_SIGN + " per kWh', \
+            label:'" + CENT_SIGN + " per kWh', \
             steppedLine:true, \
             data:[ \
                " + prices + " \
