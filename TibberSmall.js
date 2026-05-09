@@ -2,9 +2,9 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: cyan; icon-glyph: bolt;
 // Tibber-widget
-// v1.0.0 - første versjon - Sven-Ove Bjerkan
-// v1.0.1 - Lagt til "HOME_NR" som innstilling
-// v1.5.0 - Laget medium- og large-størrelse widget (foreløpig som 3 separate script)
+// v1.0.0 - first version - Sven-Ove Bjerkan
+// v1.0.1 - Added "HOME_NR" as setting
+// v1.5.0 - Created medium and large size widgets (currently as 3 separate scripts)
 // v1.5.1 - Uploaded to GitHub by Daniel Eneström (https://github.com/danielenestrom)
 
 // Find your token by logging in with your Tibber account here:
@@ -18,24 +18,24 @@ const TIBBERTOKEN = "476c477d8a039529478ebd690d35ddd80e3308ffc49b59c65b142321aee
 const HOME_NR = 0;
 
 // HTML code for background color (#000000 is black)
-const BACKGROUNDCOLOR = "#000000";
+const BACKGROUND_COLOR = "#000000";
 
 // HTML code for text color (#FFFFFF is white)
-const TEXTCOLOR = "#FFFFFF";
+const TEXT_COLOR = "#FFFFFF";
 
 // When the hourly rate is higher than the day's average rate this color is used (red)
-const TEXTCOLOR_HIGH = "#de4035";
+const TEXT_COLOR_HIGH = "#de4035";
 
-// Når prisen denne timen er lavere enn snittprisen i dag, så brukes denne tekstfargen (grønn)
-const TEXTCOLOR_LOW = "#35de3b";
-
-
+// When the price this hour is lower than the average price today, this text color is used (green)
+const TEXT_COLOR_LOW = "#35de3b";
 
 
-// YOU DON'T HAVE TO CHANGE ANYTHING BELOW !
+
+
+// YOU DON'T HAVE TO CHANGE ANYTHING BELOW!
 // -----------------------------------------
 
-// GraphQL-spørring
+// GraphQL query
 let body = {
   "query": "{ \
     viewer { \
@@ -105,10 +105,10 @@ async function createWidget() {
   let lw = new ListWidget();
 
   // Set new background color
-  lw.backgroundColor = new Color(BACKGROUNDCOLOR);
+  lw.backgroundColor = new Color(BACKGROUND_COLOR);
 
   // We can't control when the widget fetches a new price,
-  // but we try to ask the widget to refresh one minute after the next hour
+  // but we try to request the widget to refresh one minute after the next hour
   var d = new Date();
   d.setHours(d.getHours() + 1);
   d.setMinutes(1);
@@ -136,20 +136,20 @@ async function createWidget() {
   price.font = Font.lightSystemFont(20);
   // Price higher or lower than the daily average defines the color
   if (priceOre < avgPrice)
-    price.textColor = new Color(TEXTCOLOR_LOW)
+    price.textColor = new Color(TEXT_COLOR_LOW)
   if (priceOre > avgPrice)
-    price.textColor = new Color(TEXTCOLOR_HIGH)
+    price.textColor = new Color(TEXT_COLOR_HIGH)
 
   const priceTxt = stackV.addText("øre/kWh");
   priceTxt.centerAlignText();
   priceTxt.font = Font.lightSystemFont(10);
-  priceTxt.textColor = new Color(TEXTCOLOR);
+  priceTxt.textColor = new Color(TEXT_COLOR);
 
-    // Add today's "max | min" hourly price
+  // Add today's "max | min" hourly price
   let maxmin = stackV.addText(minPrice + " | " + maxPrice)
   maxmin.centerAlignText()
   maxmin.font = Font.lightSystemFont(10);
-  maxmin.textColor = new Color(TEXTCOLOR);
+  maxmin.textColor = new Color(TEXT_COLOR);
 
   // Distance between the columns
   stack2.addSpacer(20)
@@ -162,17 +162,17 @@ async function createWidget() {
   let usage = stackH.addText(totCost + " kr");
   usage.rightAlignText();
   usage.font = Font.lightSystemFont(16);
-  usage.textColor = new Color(TEXTCOLOR);
+  usage.textColor = new Color(TEXT_COLOR);
 
   let usage2 = stackH.addText(totUsage + " kWh");
   usage2.rightAlignText();
   usage2.font = Font.lightSystemFont(14);
-  usage2.textColor = new Color(TEXTCOLOR);
+  usage2.textColor = new Color(TEXT_COLOR);
 
-  let usageTxt = stackH.addText("Hittil i dag");
+  let usageTxt = stackH.addText("Today so far");
   usageTxt.rightAlignText();
   usageTxt.font = Font.lightSystemFont(10);
-  usageTxt.textColor = new Color(TEXTCOLOR);
+  usageTxt.textColor = new Color(TEXT_COLOR);
 
   // Distance to bottom text
   lw.addSpacer(30)
@@ -186,10 +186,10 @@ async function createWidget() {
   let min = d.getMinutes();
   if (min < 10) min = "0" + min;
 
-  let time = lw.addText("Oppdatert: " + hour + ":" + min);
+  let time = lw.addText("Updated: " + hour + ":" + min);
   time.centerAlignText();
   time.font = Font.lightSystemFont(8);
-  time.textColor = new Color(TEXTCOLOR);
+  time.textColor = new Color(TEXT_COLOR);
 
   // Return the created widget
   return lw;

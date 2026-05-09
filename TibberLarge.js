@@ -2,25 +2,25 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: cyan; icon-glyph: bolt;
 // Tibber-widget
-// v1.0.0 - første versjon - Sven-Ove Bjerkan
-// v1.0.1 - Lagt til "HOME_NR" som innstilling
-// v1.5.0 - Laget medium- og large-størrelse widget (foreløpig som 3 separate script)
-// v2.0.0 - Viser 3 timer bakover og inntil 21 timer fremover (konfigurerbart)
-// v2.0.1 - Mulighet for å legge til nettleie
-// v2.0.2 - småfiks på fontfarger, o.l
+// v1.0.0 - first version - Sven-Ove Bjerkan
+// v1.0.1 - Added "HOME_NR" as setting
+// v1.5.0 - Created medium and large size widgets (currently as 3 separate scripts)
+// v2.0.0 - Shows 3 hours back and up to 21 hours forward (configurable)
+// v2.0.1 - Possibility to add network lease
+// v2.0.2 - Small fixes on font colors, etc.
 // v2.0.3 - Uploaded to GitHub by Daniel Eneström (https://github.com/danielenestrom)
-// v2.0.4 - avrunder pris til hele øre. Trinn-graf.
-// v2.0.5 - Legg til valg av HOME_NR som parameter og visning av "bolig-navn" - takk til Marium0505!
+// v2.0.4 - Rounds price to whole øre. Step graph.
+// v2.0.5 - Add choice of HOME_NR as parameter and display of "dwelling name" - thanks to Marium0505!
 
-// Finn din token ved å logge på med Tibber-kontoen din her:
+// Find your token by logging in with your Tibber account here:
 // https://developer.tibber.com/settings/accesstoken
-// OBS! Din token er privat, ikke del den med noen!
+// NOTE! Your token is private, don't share it with anyone!
 
 const TIBBERTOKEN = "5K4MVS-OjfWhK_4yrjOlFe1F6kJXPVf7eQYggo8ebAE";
 
-// I de fleste tilfeller skal HOME_NR være 0, men om man har flere abonnement (hus+hytte f.eks)
-// så kan det være at man må endre den til 1 (eller 2).
-// Prøv 0 først og om det kommer feilmelding, prøv med 1 (og deretter 2).
+// In most cases, the HOME_NR should be 0, but if you have several subscriptions (house + cabin eg)
+// then you may need to change it to 1 (or 2).
+// Try 0 first and if there is an error message, try with 1 (and then 2).
 if (args.widgetParameter) {
 	HOME_NUMBER = args.widgetParameter;
 } else {
@@ -29,29 +29,29 @@ if (args.widgetParameter) {
 
 const HOME_NR = HOME_NUMBER;
 
-// HTML-koden for bakgrunnsfarge på widget (#000000 er svart)
-const BAKGRUNNSFARGE = "#000000";
+// HTML code for background color (#000000 is black)
+const BACKGROUND_COLOR = "#000000";
 
-// HTML-koden for tekstfarge (#FFFFFF er hvit)
-const TEKSTFARGE = "#FFFFFF";
+// HTML code for text color (#FFFFFF is white)
+const TEXT_COLOR = "#FFFFFF";
 
-// Når prisen denne timen er høyere enn snittprisen i dag, så brukes denne tekstfargen (rød)
-const TEXTFARGE_HOY = "#de4035";
+// When the price this hour is higher than the average price today, this text color is used (red)
+const TEXT_COLOR_HIGH = "#de4035";
 
-// Når prisen denne timen er lavere enn snittprisen i dag, så brukes denne tekstfargen (grønn)
-const TEXTFARGE_LAV = "#35de3b";
+// When the price this hour is lower than the average price today, this text color is used (green)
+const TEXT_COLOR_LOW = "#35de3b";
 
-// Angi hvor mange timer bakover og fremover fra inneværende time den skal bruke
-const TIMER_BAKOVER = 3;
-const TIMER_FREMOVER = 21;
+// Specify how many hours back and forward from the current hour it should use
+const HOURS_BACK = 3;
+const HOURS_FORWARD = 21;
 
-// Skal nettleie legges til i beløpene?
-const NETTLEIE = false; // (true eller false)
-const NETT_FAST = 198; // I kroner pr mnd
-const NETT_KWH = 35.51; // I øre pr kWh, med punktum som desimaltegn
+// Should network lease be added to the amounts?
+const NETWORK_LEASE = false; // (true or false)
+const NET_FIXED = 198; // In kroner per month
+const NET_KWH = 35.51; // In øre per kWh, with period as decimal separator
 
 
-// Angi størrelsen på grafen
+// Specify the size of the graph
 const GRAPH_WIDTH = 2400;
 const GRAPH_HEIGHT = 1200;
 
@@ -59,10 +59,10 @@ const GRAPH_HEIGHT = 1200;
 
 
 
-// DU TRENGER IKKE ENDRE NOE LENGRE NED !
-// --------------------------------------
+// YOU DON'T HAVE TO CHANGE ANYTHING BELOW!
+// ----------------------------------------
 
-// GraphQL-spørring
+// GraphQL query
 let body = {
   "query": "{ \
     viewer { \
@@ -107,23 +107,23 @@ req.body = JSON.stringify(body)
 req.method = "POST";
 let json = await req.loadJSON()
 
-// Array med alle timepriser
+// Array with all hourly prices
 let allPrices = json["data"]["viewer"]["homes"][HOME_NR]["currentSubscription"]["priceRating"]["hourly"]["entries"]
 
-// Date-objekt for akkurat denne timen
+// Date object for exactly this hour
 let d = new Date();
 d.setMinutes(0)
 d.setSeconds(0)
 d.setMilliseconds(0)//
 
-// Loop for å finne array-key for inneværende time
+// Loop to find array key for the current hour
 let iNow, iStart, iEnd, dLoop
 for (let i = 0; i < allPrices.length; i++) {
  dLoop = new Date(allPrices[i].time)
  if (d.getTime() == dLoop.getTime()) {
    iNow = i
-   iStart = (iNow-TIMER_BAKOVER)
-   iEnd = (iNow + TIMER_FREMOVER)
+   iStart = (iNow-HOURS_BACK)
+   iEnd = (iNow + HOURS_FORWARD)
    if (iEnd > allPrices.length) {
 	   iEnd = (allPrices.length-1)
    }
@@ -131,7 +131,7 @@ for (let i = 0; i < allPrices.length; i++) {
   }
 }
 
-// Loop for å finne snittpris
+// Loop to find average price
 let avgPrice = 0
 let minPrice = 100000
 let maxPrice = 0
@@ -139,13 +139,13 @@ let prices = [];
 let colors = [];
 let pointsize = [];
 
-// Finn neste midnatt
+// Find next midnight
 d.setHours(0);
 d.setDate(d.getDate()+1)
 
 for (let i = iStart; i <= iEnd; i++) {
-  if (NETTLEIE) {
-    allPrices[i].total = allPrices[i].total+(NETT_KWH/100);
+  if (NETWORK_LEASE) {
+    allPrices[i].total = allPrices[i].total+(NET_KWH/100);
   }
   avgPrice += allPrices[i].total
   prices.push(Math.round(allPrices[i].total * 100));
@@ -170,7 +170,7 @@ for (let i = iStart; i <= iEnd; i++) {
 }
 avgPrice = Math.round(avgPrice / (prices.length) * 100)
 
-// Loop for å lage strek for snittprisen
+// Loop to create line for the average price
 let dTemp
 let avgPrices = []
 let labels = []
@@ -208,7 +208,7 @@ url += encodeURI("{ \
             ] \
          }, \
          { \
-            label:'Snitt (" + avgPrice + " øre)', \
+            label:'Average (\" + avgPrice + \" øre)', \
             data:[ \
                " + avgPrices + " \
             ], \
@@ -251,61 +251,61 @@ url += encodeURI("{ \
 const GRAPH = await new Request(url).loadImage()
 
 
-// Hent ut totalt forbruk/kostnad hittil i dag
+// Fetch total usage/cost so far today
 let totCostD = Math.round(json["data"]["viewer"]["homes"][HOME_NR]["dayConsumption"]["pageInfo"]["totalCost"])
-let totForbrukD = Math.round(json["data"]["viewer"]["homes"][HOME_NR]["dayConsumption"]["pageInfo"]["totalConsumption"])
-// Hent ut totalt forbruk/kostnad hittil denne mnd
+let totConsumptionD = Math.round(json["data"]["viewer"]["homes"][HOME_NR]["dayConsumption"]["pageInfo"]["totalConsumption"])
+// Fetch total usage/cost so far this month
 let totCostM = Math.round(json["data"]["viewer"]["homes"][HOME_NR]["monthConsumption"]["pageInfo"]["totalCost"]) + totCostD
-let totForbrukM = Math.round(json["data"]["viewer"]["homes"][HOME_NR]["monthConsumption"]["pageInfo"]["totalConsumption"]) + totForbrukD
+let totConsumptionM = Math.round(json["data"]["viewer"]["homes"][HOME_NR]["monthConsumption"]["pageInfo"]["totalConsumption"]) + totConsumptionD
 
-// Legg til nettleie i dagssummen?
-if (NETTLEIE) {
-	totCostD += NETT_FAST/new Date(d.getYear(), d.getMonth()+1, 0).getDate();
-	totCostD += totForbrukD*(NETT_KWH/100);
+// Add network lease to the daily sum?
+if (NETWORK_LEASE) {
+	totCostD += NET_FIXED/new Date(d.getYear(), d.getMonth()+1, 0).getDate();
+	totCostD += totConsumptionD*(NET_KWH/100);
 	totCostD = Math.round(totCostD);
 }
 
-// Legg til nettleie i månedssummen?
-if (NETTLEIE) {
-	totCostM += NETT_FAST;
-	totCostM += totForbrukM*(NETT_KWH/100);
+// Add network lease to the monthly sum?
+if (NETWORK_LEASE) {
+	totCostM += NET_FIXED;
+	totCostM += totConsumptionM*(NET_KWH/100);
 	totCostM = Math.round(totCostM);
 }
 
-// Hent ut pris i øre for inneværende time
+// Fetch price in øre for the current hour
 let priceOre = Math.round(allPrices[iNow].total * 100)
 
-// Hent Tibber-logoen
-const TIBBERLOGO = await new Request("https://tibber.imgix.net/zq85bj8o2ot3/6FJ8FvW8CrwUdUu2Uqt2Ns/3cc8696405a42cb33b633d2399969f53/tibber_logo_blue_w1000.png").loadImage()
+// Fetch the Tibber logo
+const TIBBER_LOGO = await new Request("https://tibber.imgix.net/zq85bj8o2ot3/6FJ8FvW8CrwUdUu2Uqt2Ns/3cc8696405a42cb33b633d2399969f53/tibber_logo_blue_w1000.png").loadImage()
 
 
-// Opprett widget
+// Create widget
 async function createWidget() {
   // Create new empty ListWidget instance
   let lw = new ListWidget();
 
   // Set new background color
-  lw.backgroundColor = new Color(BAKGRUNNSFARGE);
+  lw.backgroundColor = new Color(BACKGROUND_COLOR);
 
-  // Man kan ikke styre når widget henter ny pris
-  // men, prøver her å be widget oppdatere seg etter 1 min over neste time
+  // We can't control when the widget fetches a new price,
+  // but we try to request the widget to refresh one minute after the next hour
   var d = new Date();
   d.setHours(d.getHours() + 1);
   d.setMinutes(1);
   lw.refreshAfterDate = d;
 
-  // Legg til Tibber-logo i en egen stack
+  // Add the Tibber logo in its own stack
   let stack = lw.addStack()
   stack.addSpacer(100)
-  let imgstack = stack.addImage(TIBBERLOGO)
+  let imgstack = stack.addImage(TIBBER_LOGO)
   imgstack.imageSize = new Size(100, 30)
   imgstack.centerAlignImage()
   stack.setPadding(0, 0, 5, 0)
 
-  if (NETTLEIE) {
+  if (NETWORK_LEASE) {
     let txtStack = lw.addStack();
     txtStack.addSpacer(100);
-    let txtNett = txtStack.addText("Alle beløp inkl nettleie");
+    let txtNett = txtStack.addText("All amounts incl. network lease");
     txtNett.centerAlignText();
     txtNett.font = Font.lightSystemFont(10);
   }
@@ -314,92 +314,92 @@ async function createWidget() {
 
   let stack2 = lw.addStack()
 
-  // Venstre kolonne
+  // Left column
   let stackV = stack2.addStack();
   stackV.layoutVertically()
   stackV.centerAlignContent()
   stackV.setPadding(0, 30, 0, 0)
 
-  // Legg til inneværende pris i v.kolonne
+  // Add current price in left column
   let price = stackV.addText(priceOre + "");
   price.centerAlignText();
   price.font = Font.lightSystemFont(20);
-  // Pris høyere eller lavere enn snitt avgjør farge
+  // Price higher or lower than average defines color
   if (priceOre < avgPrice)
-    price.textColor = new Color(TEXTFARGE_LAV)
+    price.textColor = new Color(TEXT_COLOR_LOW)
   else if (priceOre > avgPrice)
-    price.textColor = new Color(TEXTFARGE_HOY)
+    price.textColor = new Color(TEXT_COLOR_HIGH)
 
   const priceTxt = stackV.addText("øre/kWh");
   priceTxt.centerAlignText();
   priceTxt.font = Font.lightSystemFont(10);
-  priceTxt.textColor = new Color(TEKSTFARGE);
+  priceTxt.textColor = new Color(TEXT_COLOR);
 
-  // Legg til dagens "max | min"-timespris
+  // Add today's "max | min" hourly price
   let maxmin = stackV.addText(minPrice + " | " + maxPrice)
   maxmin.centerAlignText()
   maxmin.font = Font.lightSystemFont(10);
-  maxmin.textColor = new Color(TEKSTFARGE);
+  maxmin.textColor = new Color(TEXT_COLOR);
 
-  // Avstand mellom kolonnene
+  // Distance between the columns
   stack2.addSpacer(40)
 
-  // Midtre kolonne
+  // Middle column
   let stackM = stack2.addStack();
   stackM.layoutVertically()
 
-  // Legg til forbruk hittil i dag i m.kolonne
-  let forbruk = stackM.addText(totCostD + " kr");
-  forbruk.rightAlignText();
-  forbruk.font = Font.lightSystemFont(16);
-  forbruk.textColor = new Color(TEKSTFARGE);
+  // Add usage so far today in middle column
+  let consumption = stackM.addText(totCostD + " kr");
+  consumption.rightAlignText();
+  consumption.font = Font.lightSystemFont(16);
+  consumption.textColor = new Color(TEXT_COLOR);
 
-  let forbruk2 = stackM.addText(totForbrukD + " kWh");
-  forbruk2.rightAlignText();
-  forbruk2.font = Font.lightSystemFont(14);
-  forbruk2.textColor = new Color(TEKSTFARGE);
+  let consumption2 = stackM.addText(totConsumptionD + " kWh");
+  consumption2.rightAlignText();
+  consumption2.font = Font.lightSystemFont(14);
+  consumption2.textColor = new Color(TEXT_COLOR);
 
-  let forbrukTxt = stackM.addText("Hittil i dag");
-  forbrukTxt.rightAlignText();
-  forbrukTxt.font = Font.lightSystemFont(10);
-  forbrukTxt.textColor = new Color(TEKSTFARGE);
+  let consumptionTxt = stackM.addText("Today so far");
+  consumptionTxt.rightAlignText();
+  consumptionTxt.font = Font.lightSystemFont(10);
+  consumptionTxt.textColor = new Color(TEXT_COLOR);
 
-  // Avstand mellom kolonnene
+  // Distance between the columns
   stack2.addSpacer(40)
 
-  // Høyre kolonne
+  // Right column
   let stackH = stack2.addStack();
   stackH.layoutVertically()
 
-  // Legg til forbruk hittil denne mnd i h.kolonne
-  forbruk = stackH.addText(totCostM + " kr");
-  forbruk.rightAlignText();
-  forbruk.font = Font.lightSystemFont(16);
-  forbruk.textColor = new Color(TEKSTFARGE);
+  // Add usage so far this month in right column
+  consumption = stackH.addText(totCostM + " kr");
+  consumption.rightAlignText();
+  consumption.font = Font.lightSystemFont(16);
+  consumption.textColor = new Color(TEXT_COLOR);
 
-  forbruk2 = stackH.addText(totForbrukM + " kWh");
-  forbruk2.rightAlignText();
-  forbruk2.font = Font.lightSystemFont(14);
-  forbruk2.textColor = new Color(TEKSTFARGE);
+  consumption2 = stackH.addText(totConsumptionM + " kWh");
+  consumption2.rightAlignText();
+  consumption2.font = Font.lightSystemFont(14);
+  consumption2.textColor = new Color(TEXT_COLOR);
 
-  forbrukTxt = stackH.addText("Hittil denne mnd");
-  forbrukTxt.rightAlignText();
-  forbrukTxt.font = Font.lightSystemFont(10);
-  forbrukTxt.textColor = new Color(TEKSTFARGE);
+  consumptionTxt = stackH.addText("So far this month");
+  consumptionTxt.rightAlignText();
+  consumptionTxt.font = Font.lightSystemFont(10);
+  consumptionTxt.textColor = new Color(TEXT_COLOR);
 
 
-  // Avstand ned til grafen
+  // Distance to the graph
   lw.addSpacer(25);
 
 
   let HomeNickname = json["data"]["viewer"]["homes"][HOME_NR]["appNickname"];
   if (HomeNickname != null)
-    graphTxt = lw.addText("Timepriser" + " (" + HomeNickname + ")" );
+    graphTxt = lw.addText("Hourly prices" + " (" + HomeNickname + ")" );
   else
-    graphTxt = lw.addText("Timepriser");
+    graphTxt = lw.addText("Hourly prices");
   graphTxt.centerAlignText();
   graphTxt.font = Font.lightSystemFont(16);
-  graphTxt.textColor = new Color(TEKSTFARGE);
+  graphTxt.textColor = new Color(TEXT_COLOR);
 
   lw.addSpacer(10)
 
@@ -410,23 +410,23 @@ async function createWidget() {
   stackGraph.setPadding(0, 0, 0, 0)
 
 
-  // Avstand ned til bunntekst
+  // Distance to bottom text
   lw.addSpacer(20)
 
 
-  // Legg til info om når widget sist hentet prisen
+  // Add info about when the widget last fetched the price
   d = new Date()
   let hour = d.getHours();
 
-  // Omgjør til formatet HH:mm
+  // Convert to the format HH:mm
   if (hour < 10) hour = "0" + hour;
   let min = d.getMinutes();
   if (min < 10) min = "0" + min;
 
-  let time = lw.addText("Oppdatert: " + hour + ":" + min);
+  let time = lw.addText("Updated: " + hour + ":" + min);
   time.centerAlignText();
   time.font = Font.lightSystemFont(8);
-  time.textColor = new Color(TEKSTFARGE);
+  time.textColor = new Color(TEXT_COLOR);
 
   // Return the created widget
   return lw;
