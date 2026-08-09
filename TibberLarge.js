@@ -71,9 +71,6 @@ let body = {
     viewer { \
       homes { \
         appNickname \
-	  	  address { \
-	  	    address1 \
-		} \
         currentSubscription { \
           priceRating { \
             hourly { \
