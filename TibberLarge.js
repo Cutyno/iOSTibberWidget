@@ -45,8 +45,8 @@ const TEXT_COLOR_HIGH = "#de4035";
 const TEXT_COLOR_LOW = "#35de3b";
 
 // Specify how many hours back and forward from the current hour it should use
-const HOURS_BACK = 3;
-const HOURS_FORWARD = 21;
+const QHOURS_BACK = 12;
+const QHOURS_FORWARD = 84;
 
 // Should network lease be added to the amounts?
 const NETWORK_LEASE = false; // (true or false)
@@ -72,12 +72,14 @@ let body = {
       homes { \
         appNickname \
         currentSubscription { \
-          priceRating { \
-            hourly { \
-              entries { \
-                total \
-                time \
-              } \
+          priceInfo(resolution:QUARTER_HOURLY){ \
+            today { \
+              total \
+              startsAt \
+            } \
+            tomorrow { \
+              total \
+              startsAt \
             } \
           } \
         } \
@@ -108,7 +110,9 @@ req.method = "POST";
 let json = await req.loadJSON()
 
 // Array with all hourly prices
-let allPrices = json["data"]["viewer"]["homes"][HOME_NR]["currentSubscription"]["priceRating"]["hourly"]["entries"]
+let allPrices = [];
+allPrices.push(...json["data"]["viewer"]["homes"][HOME_NR]["currentSubscription"]["priceInfo"]["today"])
+allPrices.push(...json["data"]["viewer"]["homes"][HOME_NR]["currentSubscription"]["priceInfo"]["tomorrow"])
 
 // Date object for exactly this hour
 let d = new Date();
@@ -119,11 +123,11 @@ d.setMilliseconds(0)//
 // Loop to find array key for the current hour
 let iNow, iStart, iEnd, dLoop
 for (let i = 0; i < allPrices.length; i++) {
- dLoop = new Date(allPrices[i].time)
+ dLoop = new Date(allPrices[i].startsAt)
  if (d.getTime() == dLoop.getTime()) {
    iNow = i
-   iStart = (iNow-HOURS_BACK)
-   iEnd = (iNow + HOURS_FORWARD)
+   iStart = (iNow-QHOURS_BACK)
+   iEnd = (iNow + QHOURS_FORWARD)
    if (iEnd > allPrices.length) {
 	   iEnd = (allPrices.length-1)
    }
@@ -159,7 +163,7 @@ for (let i = iStart; i <= iEnd; i++) {
   	colors.push("'yellow'");
     pointsize.push(20);
   }
-  else if (d.getTime() == new Date(allPrices[i].time).getTime()) {
+  else if (d.getTime() == new Date(allPrices[i].startsAt).getTime()) {
     colors.push("'cyan'");
     pointsize.push(20);
   }
@@ -176,7 +180,7 @@ let avgPrices = []
 let labels = []
 for (let i = iStart; i <= iEnd; i++) {
   avgPrices.push(avgPrice);
-  dTemp = new Date(allPrices[i].time)
+  dTemp = new Date(allPrices[i].startsAt)
   let hours = dTemp.getHours();
   if (hours < 10)
     hours = "0"+hours;
@@ -394,9 +398,9 @@ async function createWidget() {
 
   let HomeNickname = json["data"]["viewer"]["homes"][HOME_NR]["appNickname"];
   if (HomeNickname != null)
-    graphTxt = lw.addText("Hourly prices" + " (" + HomeNickname + ")" );
+    graphTxt = lw.addText("Quarter Hourly prices" + " (" + HomeNickname + ")" );
   else
-    graphTxt = lw.addText("Hourly prices");
+    graphTxt = lw.addText("Quarter Hourly prices");
   graphTxt.centerAlignText();
   graphTxt.font = Font.lightSystemFont(16);
   graphTxt.textColor = new Color(TEXT_COLOR);
